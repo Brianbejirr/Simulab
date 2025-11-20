@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelombang Suara - Simulasi Sains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.stop {
+            background: #ff6b6b;
+        }
+
+        .btn.stop:hover {
+            background: #ee5a52;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .frequency-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .freq-item {
+            padding: 0.5rem;
+            background: #f0f3ff;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .freq-item:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="title">
+            <h1>🌊 Gelombang Suara</h1>
+            <p>Pelajari karakteristik gelombang suara dan frekuensi</p>
+        </div>
+
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi Gelombang</h2>
+                <div class="canvas-container">
+                    <canvas id="soundCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Frekuensi (Hz): <span id="frequencyValue">440</span></label>
+                        <input type="range" id="frequencySlider" min="100" max="2000" step="100" value="440">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Amplitudo (Volume): <span id="amplitudeValue">100</span>%</label>
+                        <input type="range" id="amplitudeSlider" min="20" max="150" value="100">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Kecepatan: <span id="speedValue">1x</span></label>
+                        <input type="range" id="speedSlider" min="0.5" max="2" step="0.5" value="1">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn" onclick="startWave()">▶ Mulai</button>
+                        <button class="btn stop" onclick="stopWave()">⏹ Berhenti</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="showGrid" checked> Tampilkan Grid
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang Gelombang Suara</h3>
+                    <p>Gelombang suara adalah gelombang mekanik yang merambat melalui medium seperti udara, air, atau benda padat.</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Frekuensi Saat Ini</div>
+                    <div class="stat-value" id="currentFreq">440 Hz</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Frekuensi A4 standar</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Panjang Gelombang</div>
+                    <div class="stat-value" id="wavelength">78 cm</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Di udara 20°C</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Kecepatan Suara</div>
+                    <div class="stat-value">343 m/s</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Di udara 20°C</p>
+                </div>
+
+                <div class="info-section" style="margin-top: 1.5rem;">
+                    <h3>🎵 Frekuensi Umum</h3>
+                    <div class="frequency-box">
+                        <div class="freq-item" onclick="setFrequency(262)">C4<br>262 Hz</div>
+                        <div class="freq-item" onclick="setFrequency(330)">E4<br>330 Hz</div>
+                        <div class="freq-item" onclick="setFrequency(440)">A4<br>440 Hz</div>
+                        <div class="freq-item" onclick="setFrequency(494)">B4<br>494 Hz</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('soundCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let isAnimating = false;
+        let time = 0;
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function getFrequency() {
+            return parseInt(document.getElementById('frequencySlider').value);
+        }
+
+        function getAmplitude() {
+            return parseInt(document.getElementById('amplitudeSlider').value);
+        }
+
+        function getSpeed() {
+            return parseFloat(document.getElementById('speedSlider').value);
+        }
+
+        function calculateWavelength() {
+            const freq = getFrequency();
+            const speedOfSound = 343;
+            return (speedOfSound / freq * 100).toFixed(0);
+        }
+
+        function drawWave() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerY = canvas.height / 2;
+            const frequency = getFrequency();
+            const amplitude = (getAmplitude() / 100) * 60;
+            const speed = getSpeed();
+
+            // Draw grid
+            if (document.getElementById('showGrid').checked) {
+                ctx.strokeStyle = 'rgba(102, 126, 234, 0.1)';
+                ctx.lineWidth = 1;
+
+                for (let i = 0; i < canvas.height; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                for (let i = 0; i < canvas.width; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+            }
+
+            // Draw center line
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // Draw wave
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            for (let x = 0; x < canvas.width; x += 2) {
+                const angle = (x / canvas.width) * (frequency / 440) * Math.PI * 2 + (time * speed * 0.02);
+                const y = centerY + Math.sin(angle) * amplitude;
+
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.stroke();
+
+            // Draw wave properties
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Frekuensi: ${frequency} Hz`, 20, 30);
+            ctx.fillText(`Amplitudo: ${getAmplitude()}%`, 20, 60);
+
+            // Draw amplitude visualization
+            ctx.strokeStyle = '#FF6B6B';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 50, centerY);
+            ctx.lineTo(canvas.width - 50, centerY - amplitude);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#FF6B6B';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('A', canvas.width - 50, centerY - amplitude - 15);
+        }
+
+        function animate() {
+            if (isAnimating) {
+                time += 1;
+                drawWave();
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function startWave() {
+            isAnimating = true;
+            animate();
+        }
+
+        function stopWave() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            drawWave();
+        }
+
+        function setFrequency(freq) {
+            document.getElementById('frequencySlider').value = freq;
+            updateFrequency();
+        }
+
+        function updateFrequency() {
+            const freq = getFrequency();
+            document.getElementById('frequencyValue').textContent = freq;
+            document.getElementById('currentFreq').textContent = freq + ' Hz';
+            document.getElementById('wavelength').textContent = calculateWavelength() + ' cm';
+            drawWave();
+        }
+
+        // Event listeners
+        document.getElementById('frequencySlider').addEventListener('input', updateFrequency);
+
+        document.getElementById('amplitudeSlider').addEventListener('input', function() {
+            document.getElementById('amplitudeValue').textContent = this.value;
+            drawWave();
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value + 'x';
+        });
+
+        document.getElementById('showGrid').addEventListener('change', function() {
+            drawWave();
+        });
+
+        // Initial draw
+        drawWave();
+    </script>
+</body>
+</html>

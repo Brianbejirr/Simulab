@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravitasi Planet - Simulasi Sains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(to bottom, #000033 0%, #000011 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.stop {
+            background: #ff6b6b;
+        }
+
+        .btn.stop:hover {
+            background: #ee5a52;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .planet-select {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .planet-btn {
+            padding: 0.6rem;
+            background: #f0f3ff;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .planet-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .planet-btn:hover {
+            transform: scale(1.05);
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="title">
+            <h1>🌍 Gravitasi Planet</h1>
+            <p>Simulasikan gaya gravitasi dan orbit planet</p>
+        </div>
+
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi Interaktif</h2>
+                <div class="canvas-container">
+                    <canvas id="gravityCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Pilih Planet:</label>
+                        <div class="planet-select">
+                            <button class="planet-btn active" data-planet="merkurius">Merkurius</button>
+                            <button class="planet-btn" data-planet="venus">Venus</button>
+                            <button class="planet-btn" data-planet="bumi">Bumi</button>
+                            <button class="planet-btn" data-planet="mars">Mars</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Kecepatan Orbit: <span id="speedValue">1x</span></label>
+                        <input type="range" id="speedSlider" min="0.5" max="2" step="0.5" value="1">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn" onclick="startGravityAnimation()">▶ Mulai</button>
+                        <button class="btn stop" onclick="stopGravityAnimation()">⏹ Berhenti</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="showTrail" checked> Tampilkan Jejak
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang Gravitasi Planet</h3>
+                    <p>Gravitasi adalah gaya tarik yang menarik semua benda bermassa. Semakin besar massa suatu benda, semakin kuat gaya gravitasinya.</p>
+                </div>
+
+                <div id="planetInfo">
+                    <div class="stat-box">
+                        <div class="stat-label">Planet</div>
+                        <div class="stat-value" id="planetName">Merkurius</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-label">Gravitasi Permukaan</div>
+                        <div class="stat-value" id="gravityValue">3.7 m/s²</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-label">Radius</div>
+                        <div class="stat-value" id="radiusValue">3,832 km</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-label">Periode Orbit</div>
+                        <div class="stat-value" id="periodValue">88 hari</div>
+                    </div>
+                </div>
+
+                <div class="info-section" style="margin-top: 1.5rem;">
+                    <h3>🔬 Cara Menggunakan</h3>
+                    <p>1. Pilih salah satu planet dari tombol yang tersedia</p>
+                    <p>2. Tekan "Mulai" untuk memulai simulasi orbit</p>
+                    <p>3. Amati bagaimana planet mengorbit matahari</p>
+                    <p>4. Bandingkan gravitasi berbagai planet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('gravityCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let isAnimating = false;
+        let time = 0;
+        let currentPlanet = 'merkurius';
+        let trail = [];
+
+        const planetData = {
+            merkurius: {
+                name: 'Merkurius',
+                gravity: '3.7 m/s²',
+                radius: '3,832 km',
+                period: '88 hari',
+                size: 30,
+                distance: 120,
+                color: '#8C7853',
+                speed: 0.02
+            },
+            venus: {
+                name: 'Venus',
+                gravity: '8.9 m/s²',
+                radius: '6,052 km',
+                period: '225 hari',
+                size: 40,
+                distance: 160,
+                color: '#FFC649',
+                speed: 0.015
+            },
+            bumi: {
+                name: 'Bumi',
+                gravity: '9.8 m/s²',
+                radius: '6,371 km',
+                period: '365 hari',
+                size: 42,
+                distance: 200,
+                color: '#4A90E2',
+                speed: 0.01
+            },
+            mars: {
+                name: 'Mars',
+                gravity: '3.7 m/s²',
+                radius: '3,390 km',
+                period: '687 hari',
+                size: 32,
+                distance: 250,
+                color: '#E27B58',
+                speed: 0.008
+            }
+        };
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawGravity() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Draw sun
+            const sunGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+            sunGradient.addColorStop(0, '#FDB813');
+            sunGradient.addColorStop(1, '#FD8D13');
+            ctx.fillStyle = sunGradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw sun glow
+            ctx.fillStyle = 'rgba(253, 184, 19, 0.2)';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            const planet = planetData[currentPlanet];
+            const speed = parseFloat(document.getElementById('speedSlider').value);
+
+            // Draw orbital path
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, planet.distance, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw planet trail
+            if (document.getElementById('showTrail').checked) {
+                if (trail.length > 1) {
+                    ctx.strokeStyle = `rgba(${hexToRgb(planet.color).join(',')}, 0.3)`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(trail[0].x, trail[0].y);
+                    for (let i = 1; i < trail.length; i++) {
+                        ctx.lineTo(trail[i].x, trail[i].y);
+                    }
+                    ctx.stroke();
+                }
+            }
+
+            // Calculate planet position
+            const angle = (time * speed * planet.speed) * Math.PI / 180;
+            const planetX = centerX + planet.distance * Math.cos(angle);
+            const planetY = centerY + planet.distance * Math.sin(angle);
+
+            // Add to trail
+            if (isAnimating) {
+                trail.push({ x: planetX, y: planetY });
+                if (trail.length > 200) {
+                    trail.shift();
+                }
+            }
+
+            // Draw planet
+            ctx.fillStyle = planet.color;
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, planet.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw planet glow
+            ctx.fillStyle = `rgba(${hexToRgb(planet.color).join(',')}, 0.2)`;
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, planet.size + 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw connection line
+            ctx.strokeStyle = `rgba(${hexToRgb(planet.color).join(',')}, 0.3)`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(planetX, planetY);
+            ctx.stroke();
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [255, 255, 255];
+        }
+
+        function animateGravity() {
+            if (isAnimating) {
+                time += 1;
+                drawGravity();
+                animationId = requestAnimationFrame(animateGravity);
+            }
+        }
+
+        function startGravityAnimation() {
+            isAnimating = true;
+            animateGravity();
+        }
+
+        function stopGravityAnimation() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            drawGravity();
+        }
+
+        function updatePlanetInfo() {
+            const planet = planetData[currentPlanet];
+            document.getElementById('planetName').textContent = planet.name;
+            document.getElementById('gravityValue').textContent = planet.gravity;
+            document.getElementById('radiusValue').textContent = planet.radius;
+            document.getElementById('periodValue').textContent = planet.period;
+            trail = [];
+            drawGravity();
+        }
+
+        // Event listeners
+        document.querySelectorAll('.planet-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.planet-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentPlanet = this.dataset.planet;
+                updatePlanetInfo();
+            });
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value + 'x';
+        });
+
+        document.getElementById('showTrail').addEventListener('change', function() {
+            if (!this.checked) {
+                trail = [];
+            }
+            drawGravity();
+        });
+
+        // Initial draw
+        drawGravity();
+    </script>
+</body>
+</html>

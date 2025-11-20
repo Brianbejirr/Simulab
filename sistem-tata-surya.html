@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Tata Surya - SimuLab</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: rgba(255,255,255,0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background .2s;
+        }
+        .back-button:hover { background: #764ba2; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .title p { font-size: 1.1rem; opacity: 0.9; }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .canvas-container {
+            width: 100%;
+            background: linear-gradient(135deg,#e0eaff 0%,#c3cfe2 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        canvas { width: 100%; height: 400px; display: block; }
+        .controls { display:flex; flex-direction:column; gap:1rem;}
+        .control-group label {font-weight:600;color:#333;}
+        .planets-list {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap:0.5rem;
+        }
+        .planet-btn {
+            padding: 0.6rem 0.5rem;
+            border:2px solid #667eea;
+            border-radius:6px;
+            font-weight:600;
+            background: #f0f3ff;
+            color:#667eea;
+            cursor:pointer;
+            transition:background .2s, color .2s;
+        }
+        .planet-btn.active,
+        .planet-btn:hover { background: #667eea; color: white;}
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .info-section { margin-bottom:1.2rem;}
+        .info-section h3 { color: #667eea; margin-bottom:0.5rem; font-size:1.1rem;}
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        .stat-label {font-weight:600;color:#333;}
+        .stat-value {font-size:1.2rem;color:#667eea;font-weight:700;}
+        footer {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        @media (max-width:968px) {
+            .content { grid-template-columns:1fr;}
+        }
+        @media (max-width:480px){
+            .title h1{font-size:1.5rem;}
+            .planets-list{grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+    <div class="container">
+        <div class="title">
+            <h1>🪐 Sistem Tata Surya</h1>
+            <p>Simulasi orbit planet sekitar Matahari, pilih planet untuk info.</p>
+        </div>
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi Interaktif</h2>
+                <div class="canvas-container">
+                    <canvas id="solarCanvas"></canvas>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Pilih planet untuk info:</label>
+                        <div class="planets-list">
+                            <button class="planet-btn active" data-planet="Merkurius">Merkurius</button>
+                            <button class="planet-btn" data-planet="Venus">Venus</button>
+                            <button class="planet-btn" data-planet="Bumi">Bumi</button>
+                            <button class="planet-btn" data-planet="Mars">Mars</button>
+                            <button class="planet-btn" data-planet="Jupiter">Jupiter</button>
+                            <button class="planet-btn" data-planet="Saturnus">Saturnus</button>
+                            <button class="planet-btn" data-planet="Uranus">Uranus</button>
+                            <button class="planet-btn" data-planet="Neptunus">Neptunus</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang Tata Surya</h3>
+                    <p>Tata surya terdiri dari Matahari dan delapan planet utama yang bergerak mengelilinginya dalam lintasan tertentu.</p>
+                </div>
+                <div id="planetInfoPanel">
+                  <div class="stat-box">
+                      <div class="stat-label">Planet</div>
+                      <div class="stat-value" id="planetName">Merkurius</div>
+                  </div>
+                  <div class="stat-box">
+                      <div class="stat-label">Jarak ke Matahari</div>
+                      <div class="stat-value" id="planetDist">57,9 juta km</div>
+                  </div>
+                  <div class="stat-box">
+                      <div class="stat-label">Diameter</div>
+                      <div class="stat-value" id="planetDia">4.880 km</div>
+                  </div>
+                  <div class="stat-box">
+                      <div class="stat-label">Durasi Tahun Planet</div>
+                      <div class="stat-value" id="planetYear">88 hari</div>
+                  </div>
+                  <div class="stat-box">
+                      <div class="stat-label">Deskripsi</div>
+                      <div class="stat-value" id="planetDesc">Planet terkecil dan terdekat ke Matahari.</div>
+                  </div>
+                </div>
+                <div class="info-section" style="margin-top:1.5rem;">
+                    <h3>🔬 Cara Menggunakan</h3>
+                    <p>1. Tekan tombol nama planet untuk melihat info dan orbitnya.</p>
+                    <p>2. Amati planet mengelilingi Matahari dengan orbit berbeda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+    <script>
+    // DATA PLANET
+    const planets = {
+        Merkurius:  { dist: 70, color:'#b0b0b0', size:7, year:88, dia:4880, info:'Planet terkecil dan terdekat ke Matahari.' },
+        Venus:      { dist: 90, color:'#ecc08b', size:13, year:225, dia:12104, info:'Mempunyai atmosfer tebal dan terpanas.' },
+        Bumi:       { dist: 110, color:'#55aaff', size:14, year:365, dia:12756, info:'Satu-satunya planet yang mendukung kehidupan.' },
+        Mars:       { dist: 140, color:'#f76b55', size:10, year:687, dia:6792, info:'Dikenal dengan permukaan merah.' },
+        Jupiter:    { dist: 180, color:'#f4efa9', size:26, year:4331, dia:142984, info:'Planet terbesar di Tata Surya.' },
+        Saturnus:   { dist: 220, color:'#e9dca6', size:22, year:10747, dia:120536, info:'Memiliki cincin besar dan indah.' },
+        Uranus:     { dist: 260, color:'#98e0e0', size:19, year:30589, dia:51118, info:'Planet es raksasa dengan kemiringan besar.' },
+        Neptunus:   { dist: 290, color:'#4d67ea', size:18, year:59800, dia:49528, info:'Paling jauh dan berwarna biru tua.' }
+    };
+
+    // DATA METRIK ORBIT
+    const planetOrder = ['Merkurius','Venus','Bumi','Mars','Jupiter','Saturnus','Uranus','Neptunus'];
+    let selected = 'Merkurius';
+
+    // CANVAS
+    const canvas = document.getElementById('solarCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = 500, H = 400;
+    let time = 0;
+
+    function resize() {
+        W = canvas.parentElement.offsetWidth;
+        H = 400;
+        canvas.width = W;
+        canvas.height = H;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ANIMASI
+    function draw() {
+        ctx.clearRect(0,0,W,H);
+
+        // Draw sun
+        let cx=W/2, cy=H/2;
+        ctx.save();
+        let sunGradient = ctx.createRadialGradient(cx,cy,0,cx,cy,34);
+        sunGradient.addColorStop(0,'#ffecbb');
+        sunGradient.addColorStop(0.7,'#ffe157');
+        sunGradient.addColorStop(1,'#ffbe00');
+        ctx.beginPath();
+        ctx.arc(cx, cy, 34, 0, Math.PI*2);
+        ctx.fillStyle = sunGradient;
+        ctx.fill();
+        ctx.restore();
+
+        // Draw Orbits
+        for(let i=0;i<planetOrder.length;i++){
+            let p = planets[planetOrder[i]];
+            ctx.beginPath();
+            ctx.arc(cx, cy, p.dist, 0, Math.PI*2);
+            ctx.strokeStyle = 'rgba(102,126,234,0.1)';
+            ctx.lineWidth = (planetOrder[i]===selected) ? 3 : 1;
+            ctx.stroke();
+        }
+        // Draw Planets
+        for(let i=0;i<planetOrder.length;i++){
+            let p = planets[planetOrder[i]];
+            let angle = (time/(p.year*2)*360 + i*45) * Math.PI/180;
+            let x = cx + p.dist*Math.cos(angle);
+            let y = cy + p.dist*Math.sin(angle);
+            // planet body
+            ctx.beginPath();
+            ctx.arc(x, y, p.size, 0, Math.PI*2);
+            ctx.fillStyle=p.color;
+            ctx.fill();
+            // highlight selected
+            if(planetOrder[i]===selected){
+                ctx.save();
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(x, y, p.size+4, 0, Math.PI*2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            // planet label
+            ctx.fillStyle='#333';
+            ctx.font='bold 12px Segoe UI';
+            ctx.textAlign='center';
+            ctx.fillText(planetOrder[i],x,y-p.size-8);
+        }
+        time+=1;
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    // PLANET INFO PANE
+    function setPlanetInfo(nama) {
+        let p = planets[nama];
+        document.getElementById('planetName').textContent=nama;
+        document.getElementById('planetDist').textContent=p.dist*1.0+' juta km';
+        document.getElementById('planetDia').textContent=p.dia+' km';
+        document.getElementById('planetYear').textContent=p.year+' hari';
+        document.getElementById('planetDesc').textContent=p.info;
+    }
+    setPlanetInfo(selected);
+
+    // PLANET BUTTONS
+    document.querySelectorAll('.planet-btn').forEach(btn=>{
+        btn.addEventListener('click',function(){
+            document.querySelectorAll('.planet-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            selected = btn.dataset.planet;
+            setPlanetInfo(selected);
+        });
+    });
+    </script>
+</body>
+</html>

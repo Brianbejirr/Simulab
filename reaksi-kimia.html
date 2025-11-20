@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaksi Kimia - Simulasi Sains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.stop {
+            background: #ff6b6b;
+        }
+
+        .btn.stop:hover {
+            background: #ee5a52;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .reaction-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .reaction-btn {
+            padding: 0.6rem;
+            background: #f0f3ff;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .reaction-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .reaction-btn:hover {
+            transform: scale(1.05);
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .reaction-select {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="title">
+            <h1>🧪 Reaksi Kimia</h1>
+            <p>Simulasikan berbagai jenis reaksi kimia</p>
+        </div>
+
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi Interaktif</h2>
+                <div class="canvas-container">
+                    <canvas id="chemicalCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Pilih Reaksi:</label>
+                        <div class="reaction-select">
+                            <button class="reaction-btn active" data-reaction="combustion">Pembakaran</button>
+                            <button class="reaction-btn" data-reaction="acid-base">Asam-Basa</button>
+                            <button class="reaction-btn" data-reaction="synthesis">Sintesis</button>
+                            <button class="reaction-btn" data-reaction="decomposition">Dekomposisi</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Suhu Reaksi: <span id="tempValue">25</span>°C</label>
+                        <input type="range" id="tempSlider" min="0" max="100" value="25">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn" onclick="startReaction()">▶ Mulai</button>
+                        <button class="btn stop" onclick="stopReaction()">⏹ Berhenti</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="showInfo" checked> Tampilkan Info
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang Reaksi Kimia</h3>
+                    <p>Reaksi kimia adalah proses di mana zat-zat kimia berubah menjadi zat-zat baru dengan sifat yang berbeda.</p>
+                </div>
+
+                <div id="reactionInfo">
+                    <div class="stat-box">
+                        <div class="stat-label">Jenis Reaksi</div>
+                        <div class="stat-value" id="reactionType">Pembakaran</div>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Reaksi dengan oksigen</p>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-label">Persamaan</div>
+                        <div style="font-size: 0.9rem; color: #333; margin-top: 0.3rem;" id="equation">2H₂ + O₂ → 2H₂O</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-label">Jenis Energi</div>
+                        <div class="stat-value" id="energyType">Eksotermik</div>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Melepaskan energi panas</p>
+                    </div>
+
+                    <div class="stat-box">
+                        <div class="stat-label">Suhu Saat Ini</div>
+                        <div class="stat-value" id="currentTemp">25°C</div>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Kondisi reaksi</p>
+                    </div>
+                </div>
+
+                <div class="info-section" style="margin-top: 1.5rem;">
+                    <h3>🔬 Jenis-Jenis Reaksi</h3>
+                    <p><strong>Pembakaran:</strong> Reaksi dengan O₂ menghasilkan panas</p>
+                    <p><strong>Asam-Basa:</strong> Netral untuk membentuk garam</p>
+                    <p><strong>Sintesis:</strong> Dua zat bergabung jadi satu</p>
+                    <p><strong>Dekomposisi:</strong> Satu zat terurai jadi dua</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('chemicalCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let isAnimating = false;
+        let time = 0;
+        let currentReaction = 'combustion';
+
+        const reactionData = {
+            combustion: {
+                name: 'Pembakaran',
+                equation: '2H₂ + O₂ → 2H₂O + Energi',
+                energyType: 'Eksotermik',
+                color: '#FF6B6B',
+                description: 'Reaksi dengan oksigen yang melepaskan panas'
+            },
+            'acid-base': {
+                name: 'Asam-Basa',
+                equation: 'HCl + NaOH → NaCl + H₂O',
+                energyType: 'Eksotermik',
+                color: '#4ECDC4',
+                description: 'Penetralan asam dan basa'
+            },
+            synthesis: {
+                name: 'Sintesis',
+                equation: 'H₂ + Cl₂ → 2HCl',
+                energyType: 'Eksotermik',
+                color: '#45B7D1',
+                description: 'Penggabungan dua zat'
+            },
+            decomposition: {
+                name: 'Dekomposisi',
+                equation: '2H₂O₂ → 2H₂O + O₂',
+                energyType: 'Endotermik',
+                color: '#FFA07A',
+                description: 'Penguraian satu zat'
+            }
+        };
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function getTemperature() {
+            return parseInt(document.getElementById('tempSlider').value);
+        }
+
+        function drawReaction() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const reaction = reactionData[currentReaction];
+
+            // Draw beaker/container
+            drawBeaker(centerX - 80, centerY - 60, 120, 150);
+
+            // Draw reaction specific animation
+            if (currentReaction === 'combustion') {
+                drawCombustionReaction(centerX, centerY);
+            } else if (currentReaction === 'acid-base') {
+                drawAcidBaseReaction(centerX, centerY);
+            } else if (currentReaction === 'synthesis') {
+                drawSynthesisReaction(centerX, centerY);
+            } else if (currentReaction === 'decomposition') {
+                drawDecompositionReaction(centerX, centerY);
+            }
+
+            // Draw labels
+            if (document.getElementById('showInfo').checked) {
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Reaksi: ${reaction.name}`, 20, 30);
+                ctx.font = '12px Arial';
+                ctx.fillText(`Suhu: ${getTemperature()}°C`, 20, 50);
+            }
+        }
+
+        function drawBeaker(x, y, width, height) {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgba(150, 150, 255, 0.1)';
+
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y);
+            ctx.lineTo(x + 15, y - 10);
+            ctx.lineTo(x + width - 15, y - 10);
+            ctx.lineTo(x + width - 5, y);
+            ctx.lineTo(x + width, y + height);
+            ctx.lineTo(x, y + height);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function drawCombustionReaction(centerX, centerY) {
+            const intensity = Math.sin(time * 0.1) * 0.5 + 0.5;
+
+            // Draw flames
+            for (let i = 0; i < 3; i++) {
+                const offset = Math.sin(time * 0.08 + i) * 10;
+                const flameY = centerY - 40 + offset;
+                const flameHeight = 40 + intensity * 20;
+
+                ctx.fillStyle = `rgba(255, ${107 + intensity * 100}, 0, ${0.6 - intensity * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(centerX - 20 + i * 20, flameY, 10 + intensity * 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner flame
+                ctx.fillStyle = `rgba(255, 200, 0, ${0.8 - intensity * 0.4})`;
+                ctx.beginPath();
+                ctx.arc(centerX - 20 + i * 20, flameY, 5 + intensity * 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw heat waves
+            ctx.strokeStyle = `rgba(255, 100, 0, ${0.3 * intensity})`;
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 2; i++) {
+                const radius = 50 + (time * 1 + i * 20) % 100;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 30, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function drawAcidBaseReaction(centerX, centerY) {
+            const progress = (time % 100) / 100;
+
+            // Draw acid molecules (red)
+            for (let i = 0; i < 5; i++) {
+                const x = centerX - 40 + (progress * 40) * Math.cos(i);
+                const y = centerY - 30 + Math.sin(i) * 10;
+                ctx.fillStyle = '#FF6B6B';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw base molecules (blue)
+            for (let i = 0; i < 5; i++) {
+                const x = centerX + 40 - (progress * 40) * Math.cos(i);
+                const y = centerY - 30 + Math.sin(i + 2) * 10;
+                ctx.fillStyle = '#4ECDC4';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw product (neutral, yellow)
+            if (progress > 0.5) {
+                const productProgress = (progress - 0.5) * 2;
+                const productCount = Math.floor(productProgress * 8);
+                
+                for (let i = 0; i < productCount; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const x = centerX + Math.cos(angle) * 30;
+                    const y = centerY - 30 + Math.sin(angle) * 30;
+                    ctx.fillStyle = '#FDB813';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawSynthesisReaction(centerX, centerY) {
+            const progress = (time % 100) / 100;
+
+            // Draw reactants moving toward center
+            for (let i = 0; i < 4; i++) {
+                const x1 = centerX - 60 + progress * 50;
+                const x2 = centerX + 60 - progress * 50;
+
+                ctx.fillStyle = '#45B7D1';
+                ctx.beginPath();
+                ctx.arc(x1, centerY - 20, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#4ECDC4';
+                ctx.beginPath();
+                ctx.arc(x2, centerY - 20, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw product
+            if (progress > 0.3) {
+                ctx.fillStyle = '#FFB6C1';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 20, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawDecompositionReaction(centerX, centerY) {
+            const progress = (time % 100) / 100;
+
+            // Draw reactant
+            if (progress < 0.5) {
+                ctx.fillStyle = '#FFA07A';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 20, 10, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Draw products moving apart
+                const productProgress = (progress - 0.5) * 2;
+                
+                ctx.fillStyle = '#FF6B6B';
+                ctx.beginPath();
+                ctx.arc(centerX - productProgress * 40, centerY - 20, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#4ECDC4';
+                ctx.beginPath();
+                ctx.arc(centerX + productProgress * 40, centerY - 20, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function animate() {
+            if (isAnimating) {
+                time += 1;
+                drawReaction();
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function startReaction() {
+            isAnimating = true;
+            animate();
+        }
+
+        function stopReaction() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            time = 0;
+            drawReaction();
+        }
+
+        function updateReactionInfo() {
+            const reaction = reactionData[currentReaction];
+            document.getElementById('reactionType').textContent = reaction.name;
+            document.getElementById('equation').textContent = reaction.equation;
+            document.getElementById('energyType').textContent = reaction.energyType;
+            drawReaction();
+        }
+
+        // Event listeners
+        document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.reaction-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentReaction = this.dataset.reaction;
+                time = 0;
+                updateReactionInfo();
+            });
+        });
+
+        document.getElementById('tempSlider').addEventListener('input', function() {
+            document.getElementById('tempValue').textContent = this.value;
+            document.getElementById('currentTemp').textContent = this.value + '°C';
+            drawReaction();
+        });
+
+        document.getElementById('showInfo').addEventListener('change', function() {
+            drawReaction();
+        });
+
+        // Initial draw
+        drawReaction();
+    </script>
+</body>
+</html>

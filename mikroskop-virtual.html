@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mikroskop Virtual - SimuLab</title>
+<style>
+body {
+    font-family: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    margin: 0;
+    display: flex; flex-direction: column;
+}
+header {background:rgba(255,255,255,0.95);padding:1rem 2rem;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+.header-content {max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+.logo {font-size:1.5rem;font-weight:700;color:#667eea;}
+.back-button {padding:0.6rem 1.2rem;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:background .2s;}
+.back-button:hover{background:#764ba2;}
+.container {max-width:1200px;margin:0 auto;padding:2rem;flex:1;}
+.title {color:white;text-align:center;margin-bottom:2rem;}
+.title h1 {font-size:2.5rem;margin-bottom:0.5rem;}
+.title p{font-size:1.1rem;opacity:.9;}
+.content {display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+.simulation-area {background:white;border-radius:12px;padding:2rem;box-shadow:0 8px 25px rgba(0,0,0,0.2);display:flex;flex-direction:column;align-items:center;}
+.canvas-container {width:100%;max-width:500px;background:#f0f3ff;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;border:2px solid #667eea;}
+canvas {width:100%;height:400px;display:block;background:white;}
+.controls {width:100%;max-width:500px;display:flex;flex-direction:column;gap:1rem;}
+.control-group label{font-weight:600;color:#333;margin-bottom:0.35rem;display:block;}
+select,input[type="range"]{width:100%;padding:0.5rem;border-radius:6px;border:2px solid #667eea;font-size:1rem;outline:none;cursor:pointer;}
+.info-panel{background:white;border-radius:12px;padding:2rem;box-shadow:0 8px 25px rgba(0,0,0,0.2);}
+.info-section{margin-bottom:1.2rem;}
+.info-section h3{color:#667eea;margin-bottom:0.5rem;font-size:1.1rem;}
+.stat-box{background:#f0f3ff;border-left:4px solid #667eea;padding:1rem;margin-bottom:0.5rem;border-radius:4px;}
+footer{background:rgba(0,0,0,0.8);color:white;text-align:center;padding:1rem;margin-top:2rem;}
+@media (max-width: 968px) {.content{grid-template-columns:1fr;}.simulation-area,.controls{max-width:100%;}}
+@media (max-width:480px){.title h1{font-size:1.5rem;}}
+</style>
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <div class="logo">🧪 SimuLab</div>
+        <button class="back-button" onclick="window.history.back()">← Kembali</button>
+    </div>
+</header>
+<div class="container">
+    <div class="title">
+        <h1>🔬 Mikroskop Virtual</h1>
+        <p>Simulasi mikroskop dengan kontrol zoom dan gambar sel yang DESKRIPTIF & MUDAH DIPAHAMI.</p>
+    </div>
+    <div class="content">
+        <div class="simulation-area">
+            <div class="canvas-container">
+                <canvas id="microscopeCanvas"></canvas>
+            </div>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="zoomSlider">Zoom: <span id="zoomLevel">1x</span></label>
+                    <input type="range" id="zoomSlider" min="1" max="10" step="0.1" value="1">
+                </div>
+                <div class="control-group">
+                    <label for="sampleSelect">Pilih Sampel:</label>
+                    <select id="sampleSelect">
+                        <option value="sel-hewan">Sel Hewan</option>
+                        <option value="sel-tumbuhan">Sel Tumbuhan</option>
+                        <option value="bakteri">Bakteri</option>
+                        <option value="jaringan">Jaringan</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="info-panel">
+            <div class="info-section">
+                <h3>📚 Tentang Mikroskop Virtual</h3>
+                <p>Visualisasi sel-sel nyata dengan bagian utama yang mudah dikenali saat belajar biologi.</p>
+            </div>
+            <div class="stat-box" id="sampleInfoBox">
+                <h4>Sel Hewan</h4>
+                <p>Sel hewan bulat, mudah dilihat inti, sitoplasma, membran plasma, serta mitokondria.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<footer>
+    <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+</footer>
+<script>
+const canvas = document.getElementById('microscopeCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() {
+    W = canvas.parentElement.offsetWidth;
+    H = 400;
+    canvas.width = W; canvas.height = H;
+}
+window.addEventListener('resize', resize);
+resize();
+
+let currentSample = 'sel-hewan', zoom = 1;
+
+const samples = {
+    "sel-hewan": {
+        name: "Sel Hewan",
+        description: "Sel hewan bentuknya bulat. Terdapat membran plasma (dinding luar), inti (nukleus) besar, dan mitokondria bulat kecil.",
+        draw: function(){
+            // Membran plasma
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(W/2,H/2,120*zoom,106*zoom,0,0,Math.PI*2);
+            ctx.fillStyle="#fafefd";
+            ctx.fill();
+            ctx.lineWidth=5; ctx.strokeStyle="#888";
+            ctx.setLineDash([7, 6]);
+            ctx.stroke();
+
+            // Inti sel/nukleus
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(W/2,H/2,55*zoom,0,2*Math.PI);
+            ctx.fillStyle="#ffeab5";
+            ctx.fill();
+            ctx.lineWidth=3; ctx.strokeStyle="#ffab2b";
+            ctx.stroke();
+
+            // Mitokondria
+            for(let i=0;i<4;i++){
+                let angle= i*Math.PI/2+0.2;
+                let rx = Math.cos(angle)*80*zoom, ry = Math.sin(angle)*62*zoom;
+                ctx.beginPath();
+                ctx.ellipse(W/2+rx,H/2+ry,18*zoom,11*zoom,angle,0,2*Math.PI);
+                ctx.fillStyle="#ff8995";
+                ctx.fill();
+                ctx.strokeStyle="#cc3b3b"; ctx.stroke();
+            }
+            // Label
+            ctx.font = "20px Segoe UI";
+            ctx.fillStyle = "#e97000";
+            ctx.fillText("Inti Nukleus", W/2-20, H/2-20);
+            ctx.fillStyle = "#777";
+            ctx.font = "16px Segoe UI";
+            ctx.fillText("Membran Plasma", W/2-80, H/2-100);
+            ctx.fillText("Mitokondria", W/2+70, H/2+80);
+            ctx.restore();
+        }
+    },
+    "sel-tumbuhan": {
+        name: "Sel Tumbuhan",
+        description: "Sel tumbuhan berbentuk persegi. Ada dinding sel hijau, vakuola biru, nukleus kuning, dan banyak kloroplas kecil hijau di sudut.",
+        draw: function(){
+            // Dinding sel
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(W/2-110*zoom, H/2-80*zoom, 220*zoom, 160*zoom);
+            ctx.lineWidth=8; ctx.strokeStyle="#569930";
+            ctx.stroke();
+            ctx.fillStyle="#cdf6c2"; ctx.fill();
+
+            // Vakuola
+            ctx.beginPath();
+            ctx.ellipse(W/2,H/2,80*zoom,58*zoom,0,0,2*Math.PI);
+            ctx.fillStyle="#b2e7fa"; ctx.fill();
+            ctx.strokeStyle="#1279be"; ctx.stroke();
+
+            // Nukleus/inti
+            ctx.beginPath();
+            ctx.arc(W/2+35*zoom,H/2-18*zoom,30*zoom,0,2*Math.PI);
+            ctx.fillStyle="#fff156"; ctx.fill();
+            ctx.strokeStyle="#d7b400"; ctx.stroke();
+
+            // Kloroplas
+            for(let i=0;i<8;i++){
+                let angle = i*Math.PI/4;
+                let x = W/2 + Math.cos(angle)*90*zoom, y = H/2 + Math.sin(angle)*64*zoom;
+                ctx.beginPath();
+                ctx.ellipse(x, y, 13*zoom, 7*zoom, angle, 0, 2*Math.PI);
+                ctx.fillStyle="#25c930";
+                ctx.fill();
+                ctx.strokeStyle="#05911e"; ctx.stroke();
+            }
+            // Label
+            ctx.font = "20px Segoe UI";
+            ctx.fillStyle="#498A24";
+            ctx.fillText("Dinding Sel", W/2-50,H/2-85*zoom);
+            ctx.fillStyle="#0b889a";
+            ctx.fillText("Vakuola", W/2-30, H/2);
+            ctx.fillStyle="#dbb22e";
+            ctx.fillText("Inti", W/2+55,H/2-30*zoom);
+            ctx.fillStyle="#069a1b";
+            ctx.fillText("Kloroplas",W/2-110,H/2+75*zoom);
+            ctx.restore();
+        }
+    },
+    "bakteri": {
+        name: "Bakteri",
+        description: "Bakteri sederhana—bentuk batang lonjong dengan dinding sel, DNA di area tengah, dan flagella (cambuk).",
+        draw: function(){
+            ctx.save();
+            // Badan bakteri
+            ctx.beginPath();
+            ctx.ellipse(W/2,H/2,100*zoom,38*zoom,0,0,2*Math.PI);
+            ctx.fillStyle="#ffebb4"; ctx.fill();
+            ctx.lineWidth=5;
+            ctx.strokeStyle="#bba22c"; ctx.stroke();
+            // DNA
+            ctx.beginPath();
+            ctx.ellipse(W/2, H/2, 55*zoom, 12*zoom, 0.3, 0, 2*Math.PI);
+            ctx.strokeStyle="#7239cc"; ctx.lineWidth=3; ctx.stroke();
+            // Flagella
+            for(let a of [-1,1]){
+                ctx.beginPath();
+                ctx.moveTo(W/2+100*zoom*a, H/2);
+                ctx.bezierCurveTo(W/2+130*zoom*a,H/2+10,W/2+130*zoom*a,H/2+70,W/2+90*zoom*a,H/2+75);
+                ctx.strokeStyle="#ff7e67"; ctx.lineWidth=4; ctx.stroke();
+            }
+            ctx.font="20px Segoe UI";
+            ctx.fillStyle="#bba22c";
+            ctx.fillText("Dinding", W/2-80,H/2-40*zoom);
+            ctx.fillStyle="#6e35b2";
+            ctx.fillText("DNA",W/2+50,H/2);
+            ctx.fillStyle="#e15c24";
+            ctx.fillText("Flagella",W/2+80,H/2+65);
+            ctx.restore();
+        }
+    },
+    "jaringan": {
+        name: "Jaringan",
+        description: "Jaringan = kumpulan sel serupa. Kotak mewakili sel, di tengah ada nukleus, bentuk koloni padat.",
+        draw: function(){
+            let rows=3, cols=5, pad=20*zoom, cellW=65*zoom, cellH=60*zoom;
+            let startX=W/2-(cols/2)*cellW+cellW/2, startY=H/2-(rows/2)*cellH+cellH/2;
+            for(let r=0;r<rows;r++){
+                for(let c=0;c<cols;c++){
+                    let x=startX+c*cellW, y=startY+r*cellH;
+                    // sel kotak
+                    ctx.beginPath();
+                    ctx.rect(x-cellW/2,y-cellH/2,cellW-8,cellH-10);
+                    ctx.fillStyle="#e0ebf7";
+                    ctx.strokeStyle="#7c7bb4";
+                    ctx.lineWidth=2;
+                    ctx.fill(); ctx.stroke();
+                    // nukleus
+                    ctx.beginPath();
+                    ctx.arc(x,y,13*zoom,0,2*Math.PI);
+                    ctx.fillStyle="#e393ec";
+                    ctx.fill();
+                    ctx.strokeStyle="#9e429e"; ctx.stroke();
+                }
+            }
+            ctx.font="18px Segoe UI";
+            ctx.fillStyle="#445194";
+            ctx.fillText("Nukleus",W/2-100,H/2);
+            ctx.fillText("Sel Jaringan",W/2-120,H/2-60);
+        }
+    }
+};
+
+function draw() { ctx.clearRect(0,0,W,H); samples[currentSample].draw(); }
+draw();
+
+document.getElementById('zoomSlider').addEventListener('input',e=>{
+    zoom = parseFloat(e.target.value);
+    document.getElementById('zoomLevel').textContent = zoom.toFixed(1) + 'x'; draw();
+});
+document.getElementById('sampleSelect').addEventListener('change',e=>{
+    currentSample = e.target.value;
+    const box=document.getElementById('sampleInfoBox');
+    box.querySelector('h4').textContent=samples[currentSample].name;
+    box.querySelector('p').textContent=samples[currentSample].description;
+    draw();
+});
+</script>
+</body>
+</html>

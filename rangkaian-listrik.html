@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rangkaian Listrik - Simulasi Sains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.toggle {
+            background: #4ECDC4;
+        }
+
+        .btn.toggle:hover {
+            background: #36b9b3;
+        }
+
+        .btn.toggle.active {
+            background: #FF6B6B;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .circuit-type {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .circuit-btn {
+            padding: 0.6rem;
+            background: #f0f3ff;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .circuit-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .circuit-btn:hover {
+            transform: scale(1.05);
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="title">
+            <h1>⚡ Rangkaian Listrik</h1>
+            <p>Simulasikan aliran arus dan tegangan pada rangkaian</p>
+        </div>
+
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi Interaktif</h2>
+                <div class="canvas-container">
+                    <canvas id="circuitCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Tipe Rangkaian:</label>
+                        <div class="circuit-type">
+                            <button class="circuit-btn active" data-circuit="series">Seri</button>
+                            <button class="circuit-btn" data-circuit="parallel">Paralel</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Tegangan (Volt): <span id="voltageValue">12</span>V</label>
+                        <input type="range" id="voltageSlider" min="5" max="24" value="12">
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="toggleSwitch"> Buka/Tutup Saklar
+                        </label>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn toggle active" id="switchBtn" onclick="toggleCircuit()">Tutup Saklar</button>
+                        <button class="btn" onclick="resetCircuit()">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang Rangkaian Listrik</h3>
+                    <p>Rangkaian listrik adalah jalur tertutup yang memungkinkan arus listrik mengalir dari sumber ke beban dan kembali ke sumber.</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Status Saklar</div>
+                    <div class="stat-value" id="switchStatus">Terbuka</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Arus: Tidak mengalir</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Tegangan (EMF)</div>
+                    <div class="stat-value" id="emfValue">12 V</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Gaya gerak listrik</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Arus (Ampere)</div>
+                    <div class="stat-value" id="currentValue">0 A</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Aliran elektron</p>
+                </div>
+
+                <div class="info-section" style="margin-top: 1.5rem;">
+                    <h3>🔬 Komponen Utama</h3>
+                    <p><strong>Baterai:</strong> Sumber tegangan listrik</p>
+                    <p><strong>Resistor:</strong> Menghalangi aliran arus</p>
+                    <p><strong>Saklar:</strong> Membuka/menutup rangkaian</p>
+                    <p><strong>Kabel:</strong> Menghubungkan komponen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let circuitType = 'series';
+        let isCircuitClosed = false;
+        let voltage = 12;
+        let resistance = 10;
+        let current = 0;
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function calculateCurrent() {
+            if (isCircuitClosed) {
+                current = voltage / resistance;
+            } else {
+                current = 0;
+            }
+        }
+
+        function drawCircuit() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = 80;
+
+            if (circuitType === 'series') {
+                drawSeriesCircuit(centerX, centerY, scale);
+            } else {
+                drawParallelCircuit(centerX, centerY, scale);
+            }
+
+            updateStats();
+        }
+
+        function drawSeriesCircuit(centerX, centerY, scale) {
+            ctx.strokeStyle = '#333';
+            ctx.fillStyle = '#333';
+            ctx.lineWidth = 3;
+
+            // Draw circuit path
+            // Top left - Battery
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 2, centerY - scale);
+            ctx.lineTo(centerX - scale * 2, centerY + scale);
+            ctx.stroke();
+
+            // Top - Resistor 1
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 2, centerY - scale);
+            ctx.lineTo(centerX - scale * 0.5, centerY - scale);
+            ctx.stroke();
+
+            drawResistor(centerX - scale * 0.5, centerY - scale, 'h');
+
+            // Right side - Resistor 2
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale * 0.5, centerY - scale);
+            ctx.lineTo(centerX + scale * 2, centerY - scale);
+            ctx.lineTo(centerX + scale * 2, centerY);
+            ctx.stroke();
+
+            // Switch
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale * 2, centerY);
+            ctx.lineTo(centerX + scale * 2, centerY + scale);
+            ctx.lineTo(centerX - scale * 2, centerY + scale);
+            ctx.stroke();
+
+            // Draw switch indicator
+            if (isCircuitClosed) {
+                ctx.fillStyle = '#4ECDC4';
+                ctx.globalAlpha = 0.7;
+                ctx.fillRect(centerX + scale * 1.8, centerY - 10, 40, 20);
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('ON', centerX + scale * 2, centerY + 2);
+            } else {
+                ctx.fillStyle = '#FF6B6B';
+                ctx.globalAlpha = 0.7;
+                ctx.fillRect(centerX + scale * 1.8, centerY - 10, 40, 20);
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('OFF', centerX + scale * 2, centerY + 2);
+            }
+
+            // Draw battery
+            ctx.fillStyle = isCircuitClosed ? '#4ECDC4' : '#DDD';
+            ctx.fillRect(centerX - scale * 2 - 15, centerY - scale - 20, 30, 40);
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('12V', centerX - scale * 2, centerY - scale);
+
+            // Draw current flow
+            if (isCircuitClosed) {
+                drawElectronFlow();
+            }
+
+            // Draw labels
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rangkaian Seri', centerX, canvas.height - 30);
+        }
+
+        function drawParallelCircuit(centerX, centerY, scale) {
+            ctx.strokeStyle = '#333';
+            ctx.fillStyle = '#333';
+            ctx.lineWidth = 3;
+
+            // Left - Battery
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 2, centerY - scale);
+            ctx.lineTo(centerX - scale * 2, centerY + scale);
+            ctx.stroke();
+
+            // Top line
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 2, centerY - scale);
+            ctx.lineTo(centerX, centerY - scale);
+            ctx.stroke();
+
+            // Resistor 1
+            drawResistor(centerX, centerY - scale, 'h');
+
+            // Right top
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale, centerY - scale);
+            ctx.lineTo(centerX + scale * 2, centerY - scale);
+            ctx.stroke();
+
+            // Right connection
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale * 2, centerY - scale);
+            ctx.lineTo(centerX + scale * 2, centerY + scale);
+            ctx.stroke();
+
+            // Bottom line
+            ctx.beginPath();
+            ctx.moveTo(centerX - scale * 2, centerY + scale);
+            ctx.lineTo(centerX, centerY + scale);
+            ctx.stroke();
+
+            // Resistor 2
+            drawResistor(centerX, centerY + scale, 'h');
+
+            // Bottom right
+            ctx.beginPath();
+            ctx.moveTo(centerX + scale, centerY + scale);
+            ctx.lineTo(centerX + scale * 2, centerY + scale);
+            ctx.stroke();
+
+            // Draw battery
+            ctx.fillStyle = isCircuitClosed ? '#4ECDC4' : '#DDD';
+            ctx.fillRect(centerX - scale * 2 - 15, centerY - 20, 30, 40);
+
+            if (isCircuitClosed) {
+                drawElectronFlow();
+            }
+
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rangkaian Paralel', centerX, canvas.height - 30);
+        }
+
+        function drawResistor(x, y, orientation) {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            
+            if (orientation === 'h') {
+                ctx.beginPath();
+                ctx.moveTo(x - 20, y - 8);
+                ctx.lineTo(x - 10, y - 12);
+                ctx.lineTo(x, y + 12);
+                ctx.lineTo(x + 10, y - 12);
+                ctx.lineTo(x + 20, y + 8);
+                ctx.stroke();
+            }
+        }
+
+        function drawElectronFlow() {
+            ctx.strokeStyle = '#FF6B6B';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.globalAlpha = 0.6;
+
+            // Draw flowing indicator
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2 - 30, 5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+        }
+
+        function updateStats() {
+            calculateCurrent();
+            
+            const statusEl = document.getElementById('switchStatus');
+            const emfEl = document.getElementById('emfValue');
+            const currentEl = document.getElementById('currentValue');
+
+            statusEl.textContent = isCircuitClosed ? 'Tertutup' : 'Terbuka';
+            statusEl.style.color = isCircuitClosed ? '#4ECDC4' : '#FF6B6B';
+            emfEl.textContent = voltage + ' V';
+            currentEl.textContent = current.toFixed(2) + ' A';
+        }
+
+        function toggleCircuit() {
+            isCircuitClosed = !isCircuitClosed;
+            document.getElementById('toggleSwitch').checked = isCircuitClosed;
+            document.getElementById('switchBtn').textContent = isCircuitClosed ? 'Buka Saklar' : 'Tutup Saklar';
+            document.getElementById('switchBtn').classList.toggle('active');
+            drawCircuit();
+        }
+
+        function resetCircuit() {
+            isCircuitClosed = false;
+            voltage = 12;
+            document.getElementById('voltageSlider').value = 12;
+            document.getElementById('voltageValue').textContent = 12;
+            document.getElementById('toggleSwitch').checked = false;
+            document.getElementById('switchBtn').textContent = 'Tutup Saklar';
+            document.getElementById('switchBtn').classList.add('active');
+            drawCircuit();
+        }
+
+        // Event listeners
+        document.querySelectorAll('.circuit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.circuit-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                circuitType = this.dataset.circuit;
+                drawCircuit();
+            });
+        });
+
+        document.getElementById('voltageSlider').addEventListener('input', function() {
+            voltage = parseInt(this.value);
+            document.getElementById('voltageValue').textContent = voltage;
+            drawCircuit();
+        });
+
+        document.getElementById('toggleSwitch').addEventListener('change', function() {
+            toggleCircuit();
+        });
+
+        // Initial draw
+        drawCircuit();
+    </script>
+</body>
+</html>

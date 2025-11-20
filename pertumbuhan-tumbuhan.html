@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pertumbuhan Tumbuhan - SimuLab</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        margin: 0;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+    }
+    header {
+        background: rgba(255,255,255,0.95);
+        padding: 1rem 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    .back-button {
+        padding: 0.6rem 1.2rem;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s ease;
+    }
+    .back-button:hover {background: #764ba2;}
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        flex: 1;
+    }
+    .title {
+        text-align: center;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .title h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .title p {font-size: 1.1rem; opacity: 0.9;}
+    .content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    .simulation-area {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .canvas-container {
+        width: 100%;
+        max-width: 480px;
+        background: #f0f3ff;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        border: 2px solid #667eea;
+    }
+    canvas {width: 100%; height: 320px; display: block;}
+    .controls {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .control-group label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.15rem;
+    }
+    input[type="range"] {
+        width: 100%;
+        margin-bottom: 0.1rem;
+    }
+    input[type="checkbox"] {
+        transform: scale(1.2);
+        margin-right: 8px;
+    }
+    .info-panel {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+    .info-section {margin-bottom: 1.2rem;}
+    .info-section h3 {color: #667eea; margin-bottom: 0.5rem; font-size: 1.1rem;}
+    .stat-box {
+        background: #f0f3ff;
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 4px;
+    }
+    .stat-label {font-weight:600;color:#333;}
+    .stat-value {font-size:1.2rem;color:#667eea;font-weight:700;}
+    footer {
+        background: rgba(0,0,0,0.8);
+        color: white;
+        text-align: center;
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+    @media (max-width: 968px) {.content { grid-template-columns: 1fr; }}
+    @media (max-width:480px) {.title h1{font-size:1.5rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <div class="logo">🧪 SimuLab</div>
+    <button class="back-button" onclick="window.history.back()">← Kembali</button>
+  </div>
+</header>
+<div class="container">
+  <div class="title">
+    <h1>🌱 Pertumbuhan Tumbuhan</h1>
+    <p>Simulasi interaktif proses tumbuh tanaman dengan kontrol lingkungan (air, cahaya, tanah).</p>
+  </div>
+  <div class="content">
+    <div class="simulation-area">
+      <div class="canvas-container">
+        <canvas id="plantCanvas"></canvas>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label for="waterSlider">Air: <span id="waterVal">60</span>%</label>
+          <input type="range" id="waterSlider" min="0" max="100" value="60">
+        </div>
+        <div class="control-group">
+          <label for="lightSlider">Cahaya: <span id="lightVal">60</span>%</label>
+          <input type="range" id="lightSlider" min="0" max="100" value="60">
+        </div>
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="soilCheck" checked>Tanah Subur
+          </label>
+        </div>
+        <div class="control-group">
+          <label>Waktu (fase): <span id="stageText">1 (Biji)</span></label>
+        </div>
+        <button onclick="resetSimulation()" style="padding: 0.8rem; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 0.5rem;">Reset Simulasi</button>
+      </div>
+    </div>
+    <div class="info-panel">
+      <div class="info-section">
+        <h3>📚 Tentang Simulasi</h3>
+        <p>Kontrol lingkungan di bawah memengaruhi laju pertumbuhan: air, cahaya, dan kesuburan tanah.</p>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Pertumbuhan Fase:</div>
+        <div class="stat-value" id="plantPhase">Biji</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Tinggi Saat Ini:</div>
+        <div class="stat-value" id="heightValue">0 cm</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Lingkungan Optimal:</div>
+        <div class="stat-value" id="envStatus">Baik</div>
+      </div>
+      <div class="info-section" style="margin-top:1.5rem;">
+        <h3>🔬 Cara Menggunakan</h3>
+        <p>1. Atur slider air dan cahaya, coba toggle kesuburan tanah.</p>
+        <p>2. Amati animasi pertumbuhan dan perubahan fase tanaman.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+</footer>
+<script>
+const canvas = document.getElementById('plantCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() {
+    W = canvas.parentElement.offsetWidth; H = 320;
+    canvas.width = W; canvas.height = H;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Kontrol Lingkungan
+const waterSlider = document.getElementById('waterSlider');
+const lightSlider = document.getElementById('lightSlider');
+const soilCheck = document.getElementById('soilCheck');
+const waterVal = document.getElementById('waterVal');
+const lightVal = document.getElementById('lightVal');
+
+let water = 60, light = 60, soil = true;
+waterSlider.addEventListener('input', e => {
+    water = +e.target.value;
+    waterVal.textContent = water;
+});
+lightSlider.addEventListener('input', e => {
+    light = +e.target.value;
+    lightVal.textContent = light;
+});
+soilCheck.addEventListener('change', e => { soil = e.target.checked; });
+
+// State Tanaman
+let stage = 1, height = 0, maxStage = 4;
+const stageName = ["Biji", "Kecambah", "Bertunas", "Daun Lebat", "Berbunga"];
+let isStopped = false;
+const stopHeight = 170;
+ 
+function getGrowthSpeed() {
+    // Persamaan optimal: 60-80 air, 60-80 cahaya, soil subur
+    let s = 1;
+    if (water < 50 || water > 90) s *= 0.75;
+    if (light < 50 || light > 90) s *= 0.75;
+    if (!soil) s *= 0.6;
+    return s;
+}
+
+function updatePlantState() {
+    if (height >= stopHeight) {
+        isStopped = true;
+        height = stopHeight; // Pastikan tidak melebihi
+    } else {
+        height += getGrowthSpeed() * 0.07;
+    }
+
+    // stage dari tinggi
+    if (height < 9) stage = 1;
+    else if (height < 20) stage = 2;
+    else if (height < 35) stage = 3;
+    else if (height < 50) stage = 4;
+    else stage = 5;
+    
+    // UI Update
+    document.getElementById('stageText').textContent = stage+" ("+stageName[stage-1]+")";
+    document.getElementById('plantPhase').textContent = stageName[stage-1];
+    document.getElementById('heightValue').textContent = Math.round(height)+" cm";
+    let env = (getGrowthSpeed()>=0.9) ? "Baik" : (getGrowthSpeed()>0.5) ? "Cukup" : "Kurang";
+    document.getElementById('envStatus').textContent = env;
+}
+
+function drawPlant() {
+    ctx.clearRect(0,0,W,H);
+
+    // Tanah
+    ctx.fillStyle = '#a07d50';
+    ctx.fillRect(0, H-42, W, 42);
+
+    // Pot
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(W/2, H-34, 56, 24, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#855e42';
+    ctx.fill();
+    ctx.restore();
+
+    // Animasi tumbuhan sesuai stage
+    let baseY = H - 60, baseX = W/2;
+    ctx.strokeStyle = '#5e9526'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+
+    if(stage>=2){
+        // Kecambah utama (batang)
+        ctx.beginPath();
+        ctx.moveTo(baseX,baseY+12);
+        let controlY = baseY - height;
+        if (controlY < 0) controlY = 0; // Batasi gambar batang agar tidak keluar canvas
+        ctx.bezierCurveTo(baseX,baseY,baseX,baseY-8,baseX, controlY);
+        ctx.stroke();
+
+        // Daun di tahap tunas (stage 3+)
+        if(stage>=3){
+            ctx.save(); ctx.strokeStyle='#488024'; ctx.lineWidth=3;
+            ctx.beginPath();
+            ctx.moveTo(baseX,baseY-height+8);
+            ctx.quadraticCurveTo(baseX-18,baseY-height-10,baseX-24,baseY-height-16);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(baseX,baseY-height+3);
+            ctx.quadraticCurveTo(baseX+20,baseY-height-8,baseX+26,baseY-height-13);
+            ctx.stroke();
+            ctx.restore();
+
+            // daun bulat
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(baseX-24,baseY-height-16,10,20,Math.PI/7,0,2*Math.PI);
+            ctx.fillStyle="#b2efc6";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(baseX+26,baseY-height-13,10,20,-Math.PI/7,0,2*Math.PI);
+            ctx.fillStyle="#b2efc6";
+            ctx.fill();
+            ctx.restore();
+        }
+        // daun lebat
+        if(stage>=4){
+            ctx.save();
+            for(let a of [-1,1]){
+                ctx.beginPath();
+                ctx.ellipse(baseX+a*12,baseY-height-25,12,18,0,0,2*Math.PI);
+                ctx.fillStyle="#34894c";
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+        // bunga
+        if(stage>=5){
+            ctx.save();
+            let angles = [0,Math.PI/2,Math.PI,3*Math.PI/2];
+            for(let i=0;i<4;i++){
+                ctx.beginPath();
+                ctx.ellipse(baseX+Math.cos(angles[i])*14,baseY-height-36+Math.sin(angles[i])*8,7,10,angles[i],0,2*Math.PI);
+                ctx.fillStyle = "#ffe6e1";
+                ctx.fill();
+            }
+            // tengah bunga
+            ctx.beginPath();
+            ctx.arc(baseX,baseY-height-36,6,0,2*Math.PI);
+            ctx.fillStyle="#fbdc24";
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+    // Biji animasi awal
+    if(stage==1){
+        ctx.beginPath();
+        ctx.arc(baseX, baseY+8, 8, 0, 2*Math.PI);
+        ctx.fillStyle = "#ffffb0";
+        ctx.fill();
+    }
+}
+
+function resetSimulation() {
+    height = 0;
+    stage = 1;
+    isStopped = false;
+    
+    // Reset UI
+    water = 60; light = 60; soil = true;
+    waterSlider.value = water;
+    lightSlider.value = light;
+    soilCheck.checked = soil;
+    waterVal.textContent = water;
+    lightVal.textContent = light;
+
+    animate(); // Mulai lagi animasi
+}
+
+function animate() {
+    updatePlantState();
+    drawPlant();
+    if (!isStopped) {
+        requestAnimationFrame(animate);
+    }
+}
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Simulator - Simulasi Sains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.stop {
+            background: #ff6b6b;
+        }
+
+        .btn.stop:hover {
+            background: #ee5a52;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .base-pair {
+            display: inline-block;
+            background: #f0f3ff;
+            padding: 0.3rem 0.6rem;
+            margin: 0.2rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .a { color: #FF6B6B; }
+        .t { color: #4ECDC4; }
+        .g { color: #45B7D1; }
+        .c { color: #FFA07A; }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="title">
+            <h1>🧬 DNA Simulator</h1>
+            <p>Jelajahi struktur dan replikasi DNA</p>
+        </div>
+
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi 3D DNA</h2>
+                <div class="canvas-container">
+                    <canvas id="dnaCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Mode Tampilan:</label>
+                        <select id="viewMode" style="padding: 0.6rem; border: 2px solid #667eea; border-radius: 6px; cursor: pointer;">
+                            <option value="helix">Struktur Heliks</option>
+                            <option value="flat">Tampilan Datar</option>
+                            <option value="replication">Replikasi DNA</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Kecepatan Rotasi: <span id="speedValue">1x</span></label>
+                        <input type="range" id="speedSlider" min="0.5" max="2" step="0.5" value="1">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn" onclick="startDNAAnimation()">▶ Mulai</button>
+                        <button class="btn stop" onclick="stopDNAAnimation()">⏹ Berhenti</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang DNA</h3>
+                    <p>DNA (Deoxyribonucleic Acid) adalah molekul yang membawa instruksi genetik untuk semua kehidupan di Bumi.</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Struktur</div>
+                    <div class="stat-value">Heliks Ganda</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Dua rantai berpilin saling mengitari</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Basa Nitrogen</div>
+                    <div class="stat-value" style="font-size: 1rem;">
+                        <span class="base-pair a">A</span>
+                        <span class="base-pair t">T</span>
+                        <span class="base-pair g">G</span>
+                        <span class="base-pair c">C</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Komponen dasar DNA</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Pairing Rule</div>
+                    <div class="stat-value" style="font-size: 0.9rem;">A-T & G-C</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Aturan pasangan basa</p>
+                </div>
+
+                <div class="info-section" style="margin-top: 1.5rem;">
+                    <h3>🔬 Cara Menggunakan</h3>
+                    <p>1. Pilih mode tampilan yang ingin dilihat</p>
+                    <p>2. Tekan "Mulai" untuk animasi</p>
+                    <p>3. Amati struktur heliks DNA</p>
+                    <p>4. Bandingkan dengan mode replikasi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('dnaCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let isAnimating = false;
+        let time = 0;
+
+        const bases = ['A', 'T', 'G', 'C'];
+        const baseColors = {
+            'A': '#FF6B6B',
+            'T': '#4ECDC4',
+            'G': '#45B7D1',
+            'C': '#FFA07A'
+        };
+
+        let dnaSequence = generateDNASequence();
+
+        function generateDNASequence() {
+            let sequence = [];
+            for (let i = 0; i < 15; i++) {
+                sequence.push(bases[Math.floor(Math.random() * bases.length)]);
+            }
+            return sequence;
+        }
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawHelixDNA() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const speed = parseFloat(document.getElementById('speedSlider').value);
+
+            // Draw backbone lines
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            for (let i = 0; i < canvas.width; i += 10) {
+                const y = centerY + Math.sin((i + time * speed) * 0.05) * 30;
+                if (i === 0) {
+                    ctx.moveTo(i, y);
+                } else {
+                    ctx.lineTo(i, y);
+                }
+            }
+            ctx.stroke();
+
+            ctx.beginPath();
+            for (let i = 0; i < canvas.width; i += 10) {
+                const y = centerY - Math.sin((i + time * speed) * 0.05) * 30;
+                if (i === 0) {
+                    ctx.moveTo(i, y);
+                } else {
+                    ctx.lineTo(i, y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw base pairs
+            for (let i = 0; i < canvas.width; i += 30) {
+                const y1 = centerY + Math.sin((i + time * speed) * 0.05) * 30;
+                const y2 = centerY - Math.sin((i + time * speed) * 0.05) * 30;
+
+                const baseIndex = Math.floor(i / 30) % dnaSequence.length;
+                const base = dnaSequence[baseIndex];
+
+                // Draw base circles
+                ctx.fillStyle = baseColors[base];
+                ctx.beginPath();
+                ctx.arc(i, y1, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                const compliment = base === 'A' ? 'T' : base === 'T' ? 'A' : base === 'G' ? 'C' : 'G';
+                ctx.fillStyle = baseColors[compliment];
+                ctx.beginPath();
+                ctx.arc(i, y2, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw connection line
+                ctx.strokeStyle = 'rgba(102, 126, 234, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(i, y1);
+                ctx.lineTo(i, y2);
+                ctx.stroke();
+            }
+        }
+
+        function drawFlatDNA() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 50;
+            const width = canvas.width - padding * 2;
+            const height = canvas.height - padding * 2;
+
+            // Draw background
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.05)';
+            ctx.fillRect(padding, padding, width, height);
+
+            const baseWidth = width / dnaSequence.length;
+            const speed = parseFloat(document.getElementById('speedSlider').value);
+
+            for (let i = 0; i < dnaSequence.length; i++) {
+                const x = padding + i * baseWidth;
+                const base = dnaSequence[i];
+
+                // Draw top strand
+                ctx.fillStyle = baseColors[base];
+                ctx.beginPath();
+                ctx.rect(x, padding + 50, baseWidth - 2, 30);
+                ctx.fill();
+
+                // Draw base label
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(base, x + baseWidth / 2, padding + 65);
+
+                // Draw bottom strand
+                const compliment = base === 'A' ? 'T' : base === 'T' ? 'A' : base === 'G' ? 'C' : 'G';
+                ctx.fillStyle = baseColors[compliment];
+                ctx.beginPath();
+                ctx.rect(x, padding + height - 80, baseWidth - 2, 30);
+                ctx.fill();
+
+                // Draw compliment label
+                ctx.fillStyle = 'white';
+                ctx.fillText(compliment, x + baseWidth / 2, padding + height - 65);
+            }
+        }
+
+        function drawReplication() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const speed = parseFloat(document.getElementById('speedSlider').value);
+
+            // Draw background
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate animation progress
+            const progress = (time * speed * 0.02) % 1;
+
+            // Draw original DNA strands separating
+            const separation = progress * 40;
+
+            // Left strand
+            ctx.strokeStyle = '#FF6B6B';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 100 - separation, 50);
+            ctx.lineTo(centerX - 100 - separation, canvas.height - 50);
+            ctx.stroke();
+
+            // Right strand
+            ctx.strokeStyle = '#4ECDC4';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 100 + separation, 50);
+            ctx.lineTo(centerX + 100 + separation, canvas.height - 50);
+            ctx.stroke();
+
+            // Draw new strands forming
+            ctx.strokeStyle = 'rgba(255, 107, 107, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(centerX + 30 - separation, 50);
+            ctx.lineTo(centerX + 30 - separation, 50 + (canvas.height - 100) * progress);
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(centerX - 30 + separation, canvas.height - 50);
+            ctx.lineTo(centerX - 30 + separation, canvas.height - 50 - (canvas.height - 100) * progress);
+            ctx.stroke();
+
+            // Draw labels
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Replikasi DNA', centerX, 30);
+        }
+
+        function drawDNA() {
+            const mode = document.getElementById('viewMode').value;
+            
+            switch(mode) {
+                case 'helix':
+                    drawHelixDNA();
+                    break;
+                case 'flat':
+                    drawFlatDNA();
+                    break;
+                case 'replication':
+                    drawReplication();
+                    break;
+            }
+        }
+
+        function animate() {
+            if (isAnimating) {
+                time += 1;
+                drawDNA();
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function startDNAAnimation() {
+            isAnimating = true;
+            animate();
+        }
+
+        function stopDNAAnimation() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            drawDNA();
+        }
+
+        // Event listeners
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value + 'x';
+        });
+
+        document.getElementById('viewMode').addEventListener('change', function() {
+            time = 0;
+            dnaSequence = generateDNASequence();
+            drawDNA();
+        });
+
+        // Initial draw
+        drawDNA();
+    </script>
+</body>
+</html>

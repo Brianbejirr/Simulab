@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struktur Atom - Simulasi Sains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-button {
+            padding: 0.6rem 1.2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.stop {
+            background: #ff6b6b;
+        }
+
+        .btn.stop:hover {
+            background: #ee5a52;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .stat-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title h1 {
+                font-size: 1.5rem;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🧪 SimuLab</div>
+            <button class="back-button" onclick="window.history.back()">← Kembali</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="title">
+            <h1>⚛️ Struktur Atom</h1>
+            <p>Pelajari struktur atom dengan visualisasi interaktif</p>
+        </div>
+
+        <div class="content">
+            <div class="simulation-area">
+                <h2 style="margin-bottom: 1rem; color: #333;">Simulasi Interaktif</h2>
+                <div class="canvas-container">
+                    <canvas id="atomCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Jumlah Elektron: <span id="electronCount">3</span></label>
+                        <input type="range" id="electronSlider" min="1" max="10" value="3">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Kecepatan Rotasi: <span id="speedValue">1x</span></label>
+                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.5" value="1">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn" onclick="startAnimation()">▶ Mulai</button>
+                        <button class="btn stop" onclick="stopAnimation()">⏹ Berhenti</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="showOrbitalLabel" checked> Tampilkan Label
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📚 Tentang Struktur Atom</h3>
+                    <p>Atom terdiri dari tiga partikel dasar:</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Proton</div>
+                    <div class="stat-value">Muatan Positif (+)</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Terletak di inti atom</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Neutron</div>
+                    <div class="stat-value">Netral (0)</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Bersama proton di inti</p>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Elektron</div>
+                    <div class="stat-value">Muatan Negatif (-)</div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">Mengorbit di kulit atom</p>
+                </div>
+
+                <div class="info-section" style="margin-top: 1.5rem;">
+                    <h3>🔬 Cara Menggunakan</h3>
+                    <p>1. Sesuaikan jumlah elektron dengan slider</p>
+                    <p>2. Atur kecepatan rotasi sesuai keinginan</p>
+                    <p>3. Tekan tombol "Mulai" untuk memulai animasi</p>
+                    <p>4. Amati bagaimana elektron mengorbit inti atom</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 SimuLab - Platform Simulasi Sains Interaktif</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('atomCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let isAnimating = false;
+        let time = 0;
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function getElectronCount() {
+            return parseInt(document.getElementById('electronSlider').value);
+        }
+
+        function getSpeed() {
+            return parseFloat(document.getElementById('speedSlider').value);
+        }
+
+        function drawAtom() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Draw nucleus
+            const nucleusRadius = 15;
+            ctx.fillStyle = '#FF6B6B';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, nucleusRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw nucleus label
+            if (document.getElementById('showOrbitalLabel').checked) {
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Inti', centerX, centerY);
+            }
+            
+            const electronCount = getElectronCount();
+            const speed = getSpeed();
+            
+            // Draw orbital paths
+            const orbitalRadius = 80;
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, orbitalRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            if (electronCount > 3) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, orbitalRadius + 60, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            if (electronCount > 6) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, orbitalRadius + 120, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Draw electrons
+            for (let i = 0; i < electronCount; i++) {
+                const angle = (time * speed + (i * 360 / electronCount)) * Math.PI / 180;
+                
+                let radius = orbitalRadius;
+                if (i >= 3 && i < 6) {
+                    radius = orbitalRadius + 60;
+                } else if (i >= 6) {
+                    radius = orbitalRadius + 120;
+                }
+                
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                
+                // Draw electron
+                ctx.fillStyle = '#4ECDC4';
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw electron shadow
+                ctx.fillStyle = 'rgba(78, 205, 196, 0.2)';
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw orbital labels
+            if (document.getElementById('showOrbitalLabel').checked) {
+                ctx.fillStyle = '#667eea';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Kulit K', centerX + orbitalRadius, centerY - 10);
+            }
+        }
+
+        function animate() {
+            if (isAnimating) {
+                time += 1;
+                drawAtom();
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function startAnimation() {
+            isAnimating = true;
+            animate();
+        }
+
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            drawAtom();
+        }
+
+        // Event listeners
+        document.getElementById('electronSlider').addEventListener('input', function() {
+            document.getElementById('electronCount').textContent = this.value;
+            if (isAnimating) {
+                drawAtom();
+            } else {
+                stopAnimation();
+            }
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value + 'x';
+        });
+
+        document.getElementById('showOrbitalLabel').addEventListener('change', function() {
+            drawAtom();
+        });
+
+        // Draw initial atom
+        drawAtom();
+    </script>
+</body>
+</html>
